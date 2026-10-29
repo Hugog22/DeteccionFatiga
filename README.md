@@ -1,79 +1,80 @@
-# 🚗 Sistema de Detección de Fatiga al Volante (Driver Drowsiness Detection)
+# Detección de fatiga al volante
 
-Un sistema de visión artificial en tiempo real diseñado para prevenir accidentes de tráfico mediante la monitorización del estado de alerta del conductor. Utiliza técnicas avanzadas de procesamiento de imágenes y la malla facial de MediaPipe para evaluar el nivel de fatiga y distracción.
+Aplicación de visión por computador que analiza vídeo de una cámara web o de un archivo para mostrar indicadores relacionados con el estado del conductor. El programa detecta landmarks faciales con MediaPipe y calcula la apertura de los ojos (EAR), PERCLOS y una estimación de la orientación de la cabeza. Puede mostrar alertas visuales y emitir avisos sonoros.
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python&logoColor=white)
-![OpenCV](https://img.shields.io/badge/OpenCV-4.x-green?logo=opencv&logoColor=white)
-![MediaPipe](https://img.shields.io/badge/MediaPipe-Face%20Mesh-orange)
+El proyecto es experimental y no sustituye sistemas certificados de seguridad ni debe utilizarse como único medio para determinar si una persona está en condiciones de conducir.
 
-## ✨ Características Principales
+## Requisitos
 
-El sistema procesa la señal de vídeo (webcam en vivo o archivo) y calcula en tiempo real métricas críticas:
+- Python 3.8 o posterior.
+- Una cámara web para el modo en directo, o un archivo de vídeo compatible con OpenCV.
+- El modelo `face_landmarker.task` de MediaPipe Face Landmarker. Descárgalo desde la [documentación de MediaPipe](https://developers.google.com/mediapipe/solutions/vision/face_landmarker) y colócalo en el directorio raíz del proyecto, junto a `landmarks.py`.
 
-- **🥱 EAR (Eye Aspect Ratio):** Mide la apertura de los ojos para detectar parpadeos lentos y cierres prolongados.
-- **😴 PERCLOS (Percentage of Eyelid Closure):** Calcula el porcentaje de tiempo que los ojos están cerrados (típicamente > 40% indica somnolencia severa).
-- **🗣️ Head Pose Estimation (Pose de la cabeza):** Evalúa la inclinación (*pitch*) y el giro (*yaw*) de la cabeza para detectar distracciones (ej. mirar el móvil o cabeceos bruscos).
-- **🚨 Sistema de Alertas:** Genera alertas visuales (HUD en pantalla) y sonoras cuando se superan los umbrales de peligro definidos en configuración.
+## Instalación
 
-## 🛠️ Tecnologías Utilizadas
+Clona el repositorio y crea un entorno virtual:
 
-- **Python 3:** Lenguaje principal.
-- **OpenCV (`cv2`):** Captura de vídeo, procesamiento de fotogramas y renderizado de la interfaz visual (HUD).
-- **MediaPipe:** Detección robusta de landmarks faciales (Face Mesh) con aceleración e inferencia de alta precisión.
-- **Numpy:** Cálculos matemáticos y manipulaciones de matrices para las métricas geométricas (como `solvePnP` para Head Pose).
+```bash
+git clone https://github.com/Hugog22/DeteccionFatiga.git
+cd DeteccionFatiga
+python -m venv .venv
+```
 
-## 🚀 Instalación y Uso
+Activa el entorno e instala las dependencias:
 
-1. **Clonar el repositorio:**
-   ```bash
-   git clone https://github.com/Hugog22/DeteccionFatiga.git
-   cd DeteccionFatiga
-   ```
+```bash
+# macOS o Linux
+source .venv/bin/activate
 
-2. **Instalar dependencias:**
-   Se recomienda usar un entorno virtual (venv).
-   ```bash
-   pip install -r requirements.txt
-   ```
+# Windows PowerShell
+# .venv\Scripts\Activate.ps1
 
-3. **Ejecutar el sistema:**
-   - **Usando la webcam (por defecto):**
-     ```bash
-     python main.py
-     ```
-   - **Analizando un archivo de vídeo:**
-     ```bash
-     python main.py --video ruta/al/video.mp4
-     ```
-   - **Silenciar alertas sonoras:**
-     ```bash
-     python main.py --no-sound
-     ```
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
 
-## ⚙️ Configuración (`config.py`)
+Antes de ejecutar la aplicación, comprueba que `face_landmarker.task` está en el directorio del proyecto. El repositorio no incluye este archivo de modelo.
 
-El sistema es altamente parametrizable. En el archivo `config.py` puedes ajustar los umbrales para adaptarlos a tu cámara, iluminación y características físicas:
+## Uso
 
-- `EAR_THRESHOLD`: Umbral de apertura de ojos (típicamente 0.20 - 0.35).
-- `EAR_CONSEC_FRAMES_ALERT`: Frames consecutivos por debajo del umbral para disparar alerta.
-- `PERCLOS_WINDOW_SECONDS`: Ventana de tiempo (en segundos) para el cálculo de PERCLOS.
-- `HEAD_PITCH_THRESHOLD` / `HEAD_YAW_THRESHOLD`: Límites en grados para detectar desvío de la mirada o cabeceo.
+Inicia la cámara predeterminada:
 
-## 🎮 Controles durante la ejecución
+```bash
+python main.py
+```
 
-- `q` o `ESC`: Cerrar la aplicación.
-- `s`: Guardar un screenshot del frame actual.
+Procesa un archivo de vídeo:
 
-## 📁 Estructura del Proyecto
+```bash
+python main.py --video ruta/al/video.mp4
+```
 
-- `main.py`: Punto de entrada que orquesta el pipeline completo.
-- `config.py`: Parámetros globales y umbrales.
-- `capture.py`: Manejo del flujo de vídeo.
-- `landmarks.py`: Inferencia de MediaPipe y extracción de coordenadas.
-- `metrics.py`: Cálculos matemáticos y lógicos (EAR, PERCLOS, Head Pose).
-- `alerts.py`: Gestión del estado de alarmas y notificaciones.
-- `renderer.py`: Interfaz gráfica sobre OpenCV (dibujo de métricas y HUD).
+Desactiva el sonido de las alertas:
 
-## 📄 Licencia
+```bash
+python main.py --no-sound
+```
 
-Este proyecto está bajo licencia MIT. ¡Siéntete libre de utilizarlo y mejorarlo!
+Se puede combinar `--video` con `--no-sound`. Durante la ejecución, pulsa `q` o `Esc` para salir, o `s` para guardar una captura PNG en el directorio actual.
+
+## Configuración
+
+Los parámetros se definen en `config.py`. Entre ellos están el índice y la resolución solicitada a la cámara, los umbrales de EAR y PERCLOS, la ventana de cálculo de PERCLOS, los límites de orientación de la cabeza y la configuración de alertas.
+
+Los umbrales dependen de la cámara, la iluminación y la persona. Los valores incluidos son parámetros iniciales del proyecto y deben ajustarse y validarse para cada entorno; no representan umbrales clínicos ni garantizan la detección de fatiga.
+
+## Estructura
+
+| Archivo | Responsabilidad |
+| --- | --- |
+| `main.py` | Argumentos de línea de comandos y bucle principal de vídeo. |
+| `capture.py` | Captura de frames desde cámara o archivo mediante OpenCV. |
+| `landmarks.py` | Detección facial y conversión de landmarks a píxeles. |
+| `metrics.py` | Cálculo de EAR, PERCLOS y pose de la cabeza. |
+| `alerts.py` | Evaluación de condiciones de alerta y avisos sonoros. |
+| `renderer.py` | Visualización de métricas y alertas sobre el vídeo. |
+| `config.py` | Parámetros de cámara y umbrales del sistema. |
+
+## Dependencias
+
+Las dependencias de Python están fijadas o acotadas en [`requirements.txt`](requirements.txt): MediaPipe, OpenCV y NumPy.
